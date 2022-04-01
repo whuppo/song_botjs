@@ -1,0 +1,125 @@
+{
+    "data":
+    [
+        {
+            "id": "group1",
+            "label": "Group 1",
+            "description": "Group 1 Description",
+            "value":
+            [
+                {
+                    "id": "subgroup1",
+                    "label": "Subgroup 1",
+                    "description": "Subgroup 1 Description",
+                    "value":
+                    [
+                        {
+                            "id": "activity1",
+                            "label": "Activity 1",
+                            "description": "Activity 1 Description",
+                            "value": "activity1"
+                        },
+                        {
+                            "id": "activity2",
+                            "label": "Activity 2",
+                            "description": "Activity 2 Description",
+                            "value": "activity2"
+                        },
+                        {
+                            "id": "activity3",
+                            "label": "Activity 3",
+                            "description": "Activity 3 Description",
+                            "value": "activity3"
+                        }
+                    ]
+                },
+                {
+                    "id": "subgroup2",
+                    "label": "Subgroup 2",
+                    "description": "Subgroup 2 Description",
+                    "value":
+                    [
+                        {
+                            "id": "activity1",
+                            "label": "Activity 1",
+                            "description": "Activity 1 Description",
+                            "value": "activity1"
+                        },
+                        {
+                            "id": "activity2",
+                            "label": "Activity 2",
+                            "description": "Activity 2 Description",
+                            "value": "activity2"
+                        },
+                        {
+                            "id": "activity3",
+                            "label": "Activity 3",
+                            "description": "Activity 3 Description",
+                            "value": "activity3"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "group2",
+            "label": "Group 2",
+            "description": "Group 2 Description",
+            "value":
+            [
+                {
+                    "id": "subgroup1",
+                    "label": "Subgroup 1",
+                    "description": "Subgroup 1 Description",
+                    "value":
+                    [
+                        {
+                            "id": "activity1",
+                            "label": "Activity 1",
+                            "description": "Activity 1 Description",
+                            "value": "activity1"
+                        },
+                        {
+                            "id": "activity2",
+                            "label": "Activity 2",
+                            "description": "Activity 2 Description",
+                            "value": "activity2"
+                        },
+                        {
+                            "id": "activity3",
+                            "label": "Activity 3",
+                            "description": "Activity 3 Description",
+                            "value": "activity3"
+                        }
+                    ]
+                },
+                {
+                    "id": "subgroup2",
+                    "label": "Subgroup 2",
+                    "description": "Subgroup 2 Description",
+                    "value":
+                    [
+                        {
+                            "id": "activity1",
+                            "label": "Activity 1",
+                            "description": "Activity 1 Description",
+                            "value": "activity1"
+                        },
+                        {
+                            "id": "activity2",
+                            "label": "Activity 2",
+                            "description": "Activity 2 Description",
+                            "value": "activity2"
+                        },
+                        {
+                            "id": "activity3",
+                            "label": "Activity 3",
+                            "description": "Activity 3 Description",
+                            "value": "activity3"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
