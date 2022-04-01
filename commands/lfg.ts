@@ -43,6 +43,8 @@ export const lfg: Command = {
         await interaction.deferReply();
         switch(interaction.options.getSubcommand()) {
             case "create": {
+                //test commit
+                let options: MessageSelectOptionData[] = [];
                 let menu = new MessageActionRow()
                     .addComponents(
                         new MessageSelectMenu()
