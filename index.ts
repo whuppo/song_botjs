@@ -1,5 +1,6 @@
 import { Client, Intents } from 'discord.js';
 import dotenv from 'dotenv';
+import 'reflect-metadata';
 import { onInteraction } from './events/interaction';
 import { onReady } from './events/ready';
 dotenv.config();
