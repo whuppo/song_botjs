@@ -10,9 +10,14 @@ export class GroupSelection {
     emoji?: string;
 
     getOptionData() {
+        let value = this.value;
+        if (this.group) {
+            // group navigation identifier
+            value = ">" + value
+        }
         let data: MessageSelectOptionData = {
             label: this.label,
-            value: this.value,
+            value: value,
             description: this.description,
             emoji: this.emoji
         };

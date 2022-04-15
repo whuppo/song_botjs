@@ -1,8 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageSelectMenu, MessageSelectOptionData } from "discord.js";
+import { Message, MessageActionRow, MessageButton, MessageSelectMenu, MessageSelectOptionData } from "discord.js";
+import { activities, GroupSelection } from "../data/activities";
 import { Command } from "./ICommand";
-import activitiesJSON from "../data/activities.json";
-import { ActivitiesInstance } from "../data/activities";
 
 //activity select general -> specific
 //time -> h:m am/pm tz m/d
@@ -41,59 +40,73 @@ export const lfg: Command = {
         ),
     run: async (interaction) => {
         await interaction.deferReply();
-        switch(interaction.options.getSubcommand()) {
+        switch (interaction.options.getSubcommand()) {
             case "create": {
-                //test commit
-                let options: MessageSelectOptionData[] = [];
-                let menu = new MessageActionRow()
-                    .addComponents(
-                        new MessageSelectMenu()
-                            .setCustomId("activity")
-                            .setPlaceholder("Select an activity...")
-                            .addOptions([
-                                {
-                                    label: "Test Activity 1",
-                                    description: "Test Activity 1 Description",
-                                    value: "test_activity_1",
-                                    emoji: "😩"
-                                },
-                                {
-                                    label: "Test Activity 2",
-                                    description: "Test Activity 2 Description",
-                                    value: "test_activity_2",
-                                    emoji: "🎉"
-                                }
-                            ])
-                    );
+                let navigation: string[] = [];
+                let doNav = async (toNav: string) => {
+                    let componentsToAdd = [];
+                    let group = activities.find(x => x.id == toNav);
+                    if (!group) {
+                        // TODO: handle invalid group nav, currently defaults to main group
+                        group = activities.find(x => x.id == "main");
+                    }
 
-                let button = new MessageActionRow()
-                    .addComponents(
-                        new MessageButton()
-                            .setCustomId("button")
-                            .setLabel("Test")
-                            .setStyle("PRIMARY")
-                            .setEmoji("⬅")
-                    );
-                
-                await interaction.editReply({ content: "Test", components: [menu, button] });
-                let test = await interaction.fetchReply() as Message;
-                const collector1 = test.createMessageComponentCollector({ componentType: "BUTTON" });
-                const collector2 = test.createMessageComponentCollector({ componentType: "SELECT_MENU" });
+                    if (navigation.length) {
+                        componentsToAdd.unshift( new MessageActionRow()
+                            .addComponents(
+                                new MessageButton()
+                                    .setCustomId("back")
+                                    .setLabel("Back")
+                                    .setStyle("PRIMARY")
+                                    .setEmoji("⬅")
+                            )
+                        )
+                    }
 
-                collector1.on("collect", async (i) => {
-                    await i.deferUpdate();
-                    await interaction.editReply(`Last interaction: ${i.customId}`);
-                });
-                collector2.on("collect", async (i) => {
-                    await i.deferUpdate();
-                    await interaction.editReply(`Last interaction: ${i.customId}`);
-                });
+                    let options: MessageSelectOptionData[] = [];
+                    group?.values.forEach(value => options.push(value.getOptionData()));
+
+                    componentsToAdd.unshift( new MessageActionRow()
+                        .addComponents(
+                            new MessageSelectMenu()
+                                .setCustomId("activity")
+                                .setPlaceholder("Select an activity...")
+                                .addOptions(options)
+                        )
+                    )
+
+                    // probably want an embed for content
+                    await interaction.editReply({ content: `*${group?.title}*\n${group?.description}`, components: componentsToAdd });
+                    let toCollect = await interaction.fetchReply() as Message;
+                    const button_collector = toCollect.createMessageComponentCollector({ componentType: "BUTTON" });
+                    const menu_collector = toCollect.createMessageComponentCollector({ componentType: "SELECT_MENU" });
+
+                    button_collector.on("collect", async (i) => {
+                        await i.deferUpdate();
+                        let toNav = navigation.pop();
+                        doNav( toNav! );
+                    });
+                    menu_collector.on("collect", async (i) => {
+                        await i.deferUpdate();
+                        if (i.values[0].charAt(0) == ">") {
+                            navigation.push( group!.id );
+                            doNav( i.values[0].split(">")[1] );
+                        }
+                        else {
+                            await interaction.editReply({ content: `${i.values[0]} has been selected.`, components: undefined });
+                        }
+                    });
+                }
+
+                doNav("menu");
                 break;
             }
             case "edit": {
+                // TODO
                 break;
             }
             case "delete": {
+                // TODO
                 break;
             }
         }
