@@ -1,4 +1,4 @@
-import { DataType, Model } from "sequelize-typescript";
+import { Model } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { getDB } from "../database/database";
 
@@ -38,5 +38,5 @@ export const LFG = db.define<LFGInstance>("LFG", {
     time: DataTypes.TEXT,
     description: DataTypes.TEXT,
     author_id: DataTypes.TEXT,
-    message_id: DataType.TEXT
+    message_id: DataTypes.TEXT
 });
