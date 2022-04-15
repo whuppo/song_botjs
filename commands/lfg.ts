@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { plainToInstance } from "class-transformer";
 import { ButtonInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu, MessageSelectOptionData, SelectMenuInteraction } from "discord.js";
-import { Group, GroupSelection } from "../data/activities";
+import { Group } from "../data/activities";
 import { data } from "../data/activities.json";
 import { Command } from "./ICommand";
 
@@ -46,7 +46,7 @@ export const lfg: Command = {
             case "create": {
                 const activities = plainToInstance(Group, data);
                 let navigation: string[] = [];
-                let currNav: Group = new Group();
+                let currNav: Group;
                 let componentsToAdd: MessageActionRow[] = [];
 
                 const doNav = async (toNav: string, message: Message, componentInteraction?: SelectMenuInteraction | ButtonInteraction ) => {
@@ -97,36 +97,43 @@ export const lfg: Command = {
 
                     if (componentInteraction) {
                         componentInteraction.update({ content: `*${currNav.title}*\n${currNav.description}`, components: componentsToAdd });
-                        let buttonCollector = toCollect.createMessageComponentCollector({ componentType: "BUTTON" });
-                        let menuCollector = toCollect.createMessageComponentCollector({ componentType: "SELECT_MENU" });
-
-                        buttonCollector.on("collect", async (i) => {
-                            let toNav = navigation.pop();
-                            await doNav( toNav!, toCollect, i );
-                        });
-
-                        menuCollector.on("collect", async (i) => {
-                            if (i.values[0].charAt(0) == ">") {
-                                navigation.push( group!.id );
-                                await doNav( i.values[0].split(">")[1], toCollect, i );
-                            }
-                            else {
-                                await componentInteraction.update({ content: `${i.values[0]} has been selected.`, components: undefined });
-                            }
-                        });
                     }
                 }
 
-                // probably want an embed for content
-                await interaction.editReply({ content: `*${currNav.title}*\n${currNav.description}`, components: componentsToAdd });
                 let toCollect = await interaction.fetchReply() as Message;
-                let initialMenuCollector = toCollect.createMessageComponentCollector({ componentType: "SELECT_MENU" });
+                await doNav("menu", toCollect);
 
-                initialMenuCollector.on("collect", async (i) => {
-                    await doNav( i.values[0].split(">")[1], toCollect, i );
+                // probably want an embed for content
+                await interaction.editReply({ content: `*${currNav!.title}*\n${currNav!.description}`, components: componentsToAdd });
+                const buttonCollector = toCollect.createMessageComponentCollector({ componentType: "BUTTON" });
+                const menuCollector = toCollect.createMessageComponentCollector({ componentType: "SELECT_MENU" });
+
+                buttonCollector.on("collect", async (i) => {
+                    if (i.user.id === interaction.user.id) {
+                        if (i.customId == "back") {
+                            let toNav = navigation.pop();
+                            await doNav( toNav!, toCollect, i );
+                        }
+                    }
+                    else {
+                        await i.reply({ content: "You're not creating this LFG, use `/lfg create` to create your own.", ephemeral: true });
+                    }
                 });
 
-                await doNav("menu", toCollect);
+                menuCollector.on("collect", async (i) => {
+                    if (i.user.id === interaction.user.id) {
+                        if (i.values[0].charAt(0) == ">") {
+                            navigation.push( currNav!.id );
+                            await doNav( i.values[0].split(">")[1], toCollect, i );
+                        }
+                        else {
+                            await interaction.editReply({ content: `${i.values[0]} has been selected.`, components: [] });
+                        }
+                    }
+                    else {
+                        await i.reply({ content: "You're not creating this LFG, use `/lfg create` to create your own.", ephemeral: true });
+                    }
+                });
                 break;
             }
             case "edit": {
