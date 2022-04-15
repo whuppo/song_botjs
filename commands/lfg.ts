@@ -127,6 +127,7 @@ export const lfg: Command = {
                             await doNav( i.values[0].split(">")[1], toCollect, i );
                         }
                         else {
+                            // ACTIVITY HAS BEEN SELECTED HERE
                             await interaction.editReply({ content: `${i.values[0]} has been selected.`, components: [] });
                         }
                     }
