@@ -1,6 +1,8 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Message, MessageActionRow, MessageButton, MessageSelectMenu, MessageSelectOptionData } from "discord.js";
-import { activities, GroupSelection } from "../data/activities";
+import { plainToInstance } from "class-transformer";
+import { ButtonInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu, MessageSelectOptionData, SelectMenuInteraction } from "discord.js";
+import { Group, GroupSelection } from "../data/activities";
+import { data } from "../data/activities.json";
 import { Command } from "./ICommand";
 
 //activity select general -> specific
@@ -42,15 +44,20 @@ export const lfg: Command = {
         await interaction.deferReply();
         switch (interaction.options.getSubcommand()) {
             case "create": {
+                const activities = plainToInstance(Group, data);
                 let navigation: string[] = [];
-                let doNav = async (toNav: string) => {
-                    let componentsToAdd = [];
+                let currNav: Group = new Group();
+                let componentsToAdd: MessageActionRow[] = [];
+
+                const doNav = async (toNav: string, message: Message, componentInteraction?: SelectMenuInteraction | ButtonInteraction ) => {
                     let group = activities.find(x => x.id == toNav);
                     if (!group) {
                         // TODO: handle invalid group nav, currently defaults to main group
                         group = activities.find(x => x.id == "main");
                     }
+                    currNav = group!;
 
+                    componentsToAdd = [];
                     if (navigation.length) {
                         componentsToAdd.unshift( new MessageActionRow()
                             .addComponents(
@@ -64,7 +71,20 @@ export const lfg: Command = {
                     }
 
                     let options: MessageSelectOptionData[] = [];
-                    group?.values.forEach(value => options.push(value.getOptionData()));
+                    group?.values.forEach(x => {
+                        let value = x.value;
+                        if (x.group) {
+                            // group navigation identifier
+                            value = ">" + value
+                        }
+                        let data: MessageSelectOptionData = {
+                            label: x.label,
+                            value: value,
+                            description: x.description,
+                            emoji: x.emoji
+                        };
+                        options.push(data);
+                    });
 
                     componentsToAdd.unshift( new MessageActionRow()
                         .addComponents(
@@ -75,30 +95,38 @@ export const lfg: Command = {
                         )
                     )
 
-                    // probably want an embed for content
-                    await interaction.editReply({ content: `*${group?.title}*\n${group?.description}`, components: componentsToAdd });
-                    let toCollect = await interaction.fetchReply() as Message;
-                    const button_collector = toCollect.createMessageComponentCollector({ componentType: "BUTTON" });
-                    const menu_collector = toCollect.createMessageComponentCollector({ componentType: "SELECT_MENU" });
+                    if (componentInteraction) {
+                        componentInteraction.update({ content: `*${currNav.title}*\n${currNav.description}`, components: componentsToAdd });
+                        let buttonCollector = toCollect.createMessageComponentCollector({ componentType: "BUTTON" });
+                        let menuCollector = toCollect.createMessageComponentCollector({ componentType: "SELECT_MENU" });
 
-                    button_collector.on("collect", async (i) => {
-                        await i.deferUpdate();
-                        let toNav = navigation.pop();
-                        doNav( toNav! );
-                    });
-                    menu_collector.on("collect", async (i) => {
-                        await i.deferUpdate();
-                        if (i.values[0].charAt(0) == ">") {
-                            navigation.push( group!.id );
-                            doNav( i.values[0].split(">")[1] );
-                        }
-                        else {
-                            await interaction.editReply({ content: `${i.values[0]} has been selected.`, components: undefined });
-                        }
-                    });
+                        buttonCollector.on("collect", async (i) => {
+                            let toNav = navigation.pop();
+                            await doNav( toNav!, toCollect, i );
+                        });
+
+                        menuCollector.on("collect", async (i) => {
+                            if (i.values[0].charAt(0) == ">") {
+                                navigation.push( group!.id );
+                                await doNav( i.values[0].split(">")[1], toCollect, i );
+                            }
+                            else {
+                                await componentInteraction.update({ content: `${i.values[0]} has been selected.`, components: undefined });
+                            }
+                        });
+                    }
                 }
 
-                doNav("menu");
+                // probably want an embed for content
+                await interaction.editReply({ content: `*${currNav.title}*\n${currNav.description}`, components: componentsToAdd });
+                let toCollect = await interaction.fetchReply() as Message;
+                let initialMenuCollector = toCollect.createMessageComponentCollector({ componentType: "SELECT_MENU" });
+
+                initialMenuCollector.on("collect", async (i) => {
+                    await doNav( i.values[0].split(">")[1], toCollect, i );
+                });
+
+                await doNav("menu", toCollect);
                 break;
             }
             case "edit": {
