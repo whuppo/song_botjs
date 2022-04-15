@@ -1,8 +1,10 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { plainToInstance } from "class-transformer";
 import { ButtonInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu, MessageSelectOptionData, SelectMenuInteraction } from "discord.js";
+import { Op } from "sequelize";
 import { Group } from "../data/activities";
 import { data } from "../data/activities.json";
+import { ServerSettings } from "../models/settings";
 import { Command } from "./ICommand";
 
 //activity select general -> specific
@@ -42,6 +44,19 @@ export const lfg: Command = {
         ),
     run: async (interaction) => {
         await interaction.deferReply();
+        const serverSetting = await ServerSettings.findOne({
+            where: {
+                server_id: interaction.guildId,
+                lfg_channel: {
+                    [Op.not]: null
+                }
+            }
+        });
+        if (!serverSetting) {
+            await interaction.editReply("LFG Post Channel is not setup.");
+            return
+        }
+
         switch (interaction.options.getSubcommand()) {
             case "create": {
                 const activities = plainToInstance(Group, data);
