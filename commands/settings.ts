@@ -1,5 +1,5 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { TextChannel } from "discord.js";
+import { channelMention, SlashCommandBuilder } from "@discordjs/builders";
+import { GuildBasedChannel } from "discord.js";
 import { ServerSettings } from "../models/settings";
 import { Command } from "./ICommand";
 
@@ -19,9 +19,9 @@ export const settings: Command = {
         ),
     run: async (interaction) => {
         await interaction.deferReply()
-        let channelID = interaction.options.getChannel("channel")?.id;
-        if (!channelID) {
-            channelID = interaction.channelId;
+        let interactionChannel = interaction.options.getChannel("channel");
+        if (!interactionChannel) {
+            interactionChannel = interaction.channel as GuildBasedChannel;
         }
         
         let serverSetting = await ServerSettings.findOne({
@@ -33,7 +33,8 @@ export const settings: Command = {
             serverSetting = ServerSettings.build({ server_id: interaction.guildId });
         }
 
-        serverSetting.lfg_channel = channelID;
+        serverSetting.lfg_channel = interactionChannel.id;
         await serverSetting.save();
+        await interaction.editReply(`LFG Posts will now be posted to ${channelMention(interactionChannel.id)}.`);
     }
 }
