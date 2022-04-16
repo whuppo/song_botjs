@@ -1,7 +1,7 @@
 import { plainToInstance } from "class-transformer";
 import { ButtonInteraction, CommandInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu, MessageSelectOptionData, SelectMenuInteraction } from "discord.js";
-import { Group } from "../data/activities";
-import { data } from "../data/activities.json";
+import { Group } from "../../data/activities";
+import { data } from "../../data/activities.json";
 
 export const LFGCreate = async (interaction: CommandInteraction) => {
     const activities = plainToInstance(Group, data);
@@ -9,7 +9,7 @@ export const LFGCreate = async (interaction: CommandInteraction) => {
     let currNav: Group;
     let componentsToAdd: MessageActionRow[] = [];
     
-    const doNav = async (toNav: string, message: Message, componentInteraction?: SelectMenuInteraction | ButtonInteraction ) => {
+    const doNav = async (toNav: string, componentInteraction?: SelectMenuInteraction | ButtonInteraction ) => {
         let group = activities.find(x => x.id == toNav);
         if (!group) {
             // TODO: handle invalid group nav, currently defaults to main group
@@ -61,7 +61,7 @@ export const LFGCreate = async (interaction: CommandInteraction) => {
     }
     
     let toCollect = await interaction.fetchReply() as Message;
-    await doNav("menu", toCollect);
+    await doNav("menu");
     
     // probably want an embed for content
     await interaction.editReply({ content: `*${currNav!.title}*\n${currNav!.description}`, components: componentsToAdd });
@@ -72,7 +72,7 @@ export const LFGCreate = async (interaction: CommandInteraction) => {
         if (i.user.id === interaction.user.id) {
             if (i.customId == "back") {
                 let toNav = navigation.pop();
-                await doNav( toNav!, toCollect, i );
+                await doNav( toNav!, i );
             }
         }
         else {
@@ -84,7 +84,7 @@ export const LFGCreate = async (interaction: CommandInteraction) => {
         if (i.user.id === interaction.user.id) {
             if (i.values[0].charAt(0) == ">") {
                 navigation.push( currNav!.id );
-                await doNav( i.values[0].split(">")[1], toCollect, i );
+                await doNav( i.values[0].split(">")[1], i );
             }
             else {
                 // ACTIVITY HAS BEEN SELECTED HERE

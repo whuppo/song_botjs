@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { Op } from "sequelize";
 import { ServerSettings } from "../models/settings";
 import { Command } from "./ICommand";
-import { LFGCreate } from "./lfg-create";
+import { LFGCreate } from "./lfg/lfg-create";
 
 //activity select general -> specific
 //time -> h:m am/pm tz m/d
