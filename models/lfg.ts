@@ -31,7 +31,7 @@ async function LFGUIDGenerator() {
 export const LFG = db.define<LFGInstance>("LFG", {
     lfg_id: {
         type: DataTypes.NUMBER,
-        defaultValue: async () => { return await LFGUIDGenerator() },
+        defaultValue: async () => await LFGUIDGenerator(),
         primaryKey: true
     },
     activity: DataTypes.TEXT,
