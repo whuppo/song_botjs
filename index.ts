@@ -5,14 +5,14 @@ import { onInteraction } from './events/interaction';
 import { onReady } from './events/ready';
 dotenv.config();
 
+export const client = new Client({
+    intents: [
+        Intents.FLAGS.GUILDS,
+        Intents.FLAGS.GUILD_MESSAGES
+    ]
+});
+
 (async () => {
-    const client = new Client({
-        intents: [
-            Intents.FLAGS.GUILDS,
-            Intents.FLAGS.GUILD_MESSAGES
-        ]
-    });
-    
     client.on("ready", async () => await onReady(client));
     client.on("interactionCreate", async (interaction) => await onInteraction(interaction));
 
