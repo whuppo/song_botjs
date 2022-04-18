@@ -10,10 +10,10 @@ export interface LFGPostInstance extends Model {
     message_id: string
 }
 
-export const LFGPost = db.define<LFGPostInstance>("LFGPos", {
+export const LFGPost = db.define<LFGPostInstance>("LFGPost", {
     lfg_id: DataTypes.TEXT,
     message_id: DataTypes.TEXT
 });
 
-LFG.hasMany(LFGPost, { foreignKey: "lfg_id" });
-LFGPost.belongsTo(LFG);
+LFGPost.belongsTo(LFG, { foreignKey: "lfg_id" });
+LFG.hasMany(LFGPost);
