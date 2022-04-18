@@ -9,8 +9,7 @@ export interface LFGInstance extends Model {
     activity: string,
     time: string,
     description: string,
-    author_id: number,
-    message_id: number
+    author_id: number
 }
 
 async function LFGUIDGenerator() {
@@ -37,6 +36,5 @@ export const LFG = db.define<LFGInstance>("LFG", {
     activity: DataTypes.TEXT,
     time: DataTypes.TEXT,
     description: DataTypes.TEXT,
-    author_id: DataTypes.TEXT,
-    message_id: DataTypes.TEXT
+    author_id: DataTypes.TEXT
 });
