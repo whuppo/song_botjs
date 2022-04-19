@@ -1,4 +1,4 @@
-import { MessageEmbed, TextBasedChannel } from "discord.js"
+import { MessageActionRow, MessageButton, MessageEmbed, MessageOptions, TextBasedChannel } from "discord.js"
 import { client } from "../.."
 import { LFGInstance } from "../../models/lfg"
 import { LFGPost } from "../../models/lfg-post"
@@ -6,6 +6,7 @@ import { LFGSubscribe } from "../../models/lfg-subscribe"
 import { ServerSettings } from "../../models/settings"
 
 function createLFGEmbed(data: LFGInstance) {
+    let message: MessageOptions = {};
     const embed = new MessageEmbed()
         .setColor("#0099ff")
         .setTitle(data.activity)
@@ -21,7 +22,30 @@ function createLFGEmbed(data: LFGInstance) {
         });
     }
 
-    return [embed]
+    message.embeds = [ embed ];
+
+    const buttons = new MessageActionRow()
+        .addComponents([
+            new MessageButton()
+                .setCustomId("lfg_join_" + data.lfg_id)
+                .setLabel("Join")
+                .setStyle("SUCCESS")
+                .setEmoji("✔"),
+            new MessageButton()
+                .setCustomId("lfg_alt_" + data.lfg_id)
+                .setLabel("Join as alt")
+                .setStyle("PRIMARY")
+                .setEmoji("❔"),
+            new MessageButton()
+                .setCustomId("lfg_leave_" + data.lfg_id)
+                .setLabel("Leave")
+                .setStyle("SECONDARY")
+                .setEmoji("🏃‍♂️")
+        ])
+
+    message.components = [ buttons ];
+
+    return message
 }
 
 export async function createLFGPost(data: LFGInstance, server_id: string | undefined) {
@@ -62,7 +86,7 @@ export async function createLFGPost(data: LFGInstance, server_id: string | undef
     });
 
     channels_to_post.forEach(async (element) => {
-        await element.send({ embeds: createLFGEmbed(data) })
+        await element.send(createLFGEmbed(data))
             .then(async (message) => {
                 await LFGPost.create({
                     lfg_id: data.lfg_id,
