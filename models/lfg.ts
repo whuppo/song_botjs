@@ -30,7 +30,7 @@ function LFGUIDGen() {
 export const LFG = db.define<LFGInstance>("LFG", {
     lfg_id: {
         type: DataTypes.NUMBER,
-        defaultValue: LFGUIDGen(),
+        defaultValue: () => { return LFGUIDGen(); },
         primaryKey: true
     },
     activity: DataTypes.TEXT,

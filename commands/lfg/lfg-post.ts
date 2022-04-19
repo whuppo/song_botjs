@@ -61,17 +61,14 @@ export async function createLFGPost(data: LFGInstance, server_id: string | undef
         }
     });
 
-    let message_post_ids: string[] = [];
     channels_to_post.forEach(async (element) => {
-        let message = await element.send({ embeds: createLFGEmbed(data) });
-        message_post_ids.push(message.id);
-    });
-
-    message_post_ids.forEach(async (element) => {
-        await LFGPost.create({
-            lfg_id: data.lfg_id,
-            message_id: element
-        });
+        await element.send({ embeds: createLFGEmbed(data) })
+            .then(async (message) => {
+                await LFGPost.create({
+                    lfg_id: data.lfg_id,
+                    message_id: message.id
+                });
+            });
     });
 }
 

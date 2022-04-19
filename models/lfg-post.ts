@@ -16,4 +16,4 @@ export const LFGPost = db.define<LFGPostInstance>("LFGPost", {
 });
 
 LFGPost.belongsTo(LFG, { foreignKey: "lfg_id" });
-LFG.hasMany(LFGPost);
+LFG.hasMany(LFGPost, { foreignKey: "lfg_id" });

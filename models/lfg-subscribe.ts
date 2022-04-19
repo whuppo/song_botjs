@@ -16,4 +16,4 @@ export const LFGSubscribe = db.define<LFGSubscribeInstance>("LFGSubscribe", {
 });
 
 LFGSubscribe.belongsTo(ServerSettings, { foreignKey: "server_id" });
-ServerSettings.hasMany(LFGSubscribe);
+ServerSettings.hasMany(LFGSubscribe, { foreignKey: "server_id" });
