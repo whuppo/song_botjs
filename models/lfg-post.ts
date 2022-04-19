@@ -6,12 +6,12 @@ import { LFG } from "./lfg";
 const db = getDB();
 
 export interface LFGPostInstance extends Model {
-    lfg_id: string,
+    lfg_id: number,
     message_id: string
 }
 
 export const LFGPost = db.define<LFGPostInstance>("LFGPost", {
-    lfg_id: DataTypes.TEXT,
+    lfg_id: DataTypes.NUMBER,
     message_id: DataTypes.TEXT
 });
 

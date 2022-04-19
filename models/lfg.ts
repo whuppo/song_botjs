@@ -12,23 +12,25 @@ export interface LFGInstance extends Model {
     author_id: string
 }
 
+function LFGUIDGen() {
+    const min = 1000;
+    const max = 9999;
+
+    let check, roll = null;
+    while (!check) {
+        roll = Math.floor(Math.random() * (max - min + 1) + min);
+        check = LFG.findOne({
+            where: {lfg_id: roll}
+        })
+    }
+
+    return roll;
+}
+
 export const LFG = db.define<LFGInstance>("LFG", {
     lfg_id: {
         type: DataTypes.NUMBER,
-        defaultValue: async () => {
-            const min = 1000;
-            const max = 9999;
-
-            let check, roll = null;
-            while (!check) {
-                roll = Math.floor(Math.random() * (max - min + 1) + min);
-                check = await LFG.findOne({
-                    where: {lfg_id: roll}
-                })
-            }
-
-            return roll;
-        },
+        defaultValue: LFGUIDGen(),
         primaryKey: true
     },
     activity: DataTypes.TEXT,

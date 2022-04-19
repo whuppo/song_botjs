@@ -1,7 +1,8 @@
-import { MessageEmbed } from "discord.js"
+import { MessageEmbed, TextBasedChannel } from "discord.js"
 import { client } from "../.."
 import { LFGInstance } from "../../models/lfg"
 import { LFGPost } from "../../models/lfg-post"
+import { LFGSubscribe } from "../../models/lfg-subscribe"
 import { ServerSettings } from "../../models/settings"
 
 function createLFGEmbed(data: LFGInstance) {
@@ -10,7 +11,7 @@ function createLFGEmbed(data: LFGInstance) {
         .setTitle(data.activity)
         .setDescription(data.description)
         .addField("Time", data.time)
-        .setFooter({ text: `LFG ID: ${data.lfg_id.toString()}` })
+        .setFooter({ text: `LFG ID: ${data.lfg_id}` })
 
     const user = client.users.cache.get(data.author_id);
     if (user) {
@@ -32,13 +33,46 @@ export async function createLFGPost(data: LFGInstance, server_id: string | undef
 
     if (!server_setting) return;
 
-    const post_channel = client.channels.cache.find(channel => channel.id == server_setting.lfg_channel);
+    let channels_to_check: string[] = [];
+    channels_to_check.push(server_setting.lfg_channel);
 
-    if (!post_channel) return;
+    const subscribed_servers = await LFGSubscribe.findAll({
+        where: { subscribed_server_id: server_id }
+    });
 
-    if (!post_channel.isText()) return;
+    if (subscribed_servers.length) {
+        subscribed_servers.forEach(async (element) => {
+            let subscribed_server_setting = await ServerSettings.findOne({
+                where: { server_id: element.server_id }
+            });
 
-    const post_message = await post_channel.send({ embeds: createLFGEmbed(data) });
+            if (!subscribed_server_setting) return;
+
+            channels_to_check.push(subscribed_server_setting.lfg_channel);
+        });
+    }
+
+    let channels_to_post: TextBasedChannel[] = [];
+    channels_to_check.forEach(async (element) => {
+        let check = client.channels.cache.find(channel => channel.id == element);
+
+        if (check && check.isText()) {
+            channels_to_post.push(check);
+        }
+    });
+
+    let message_post_ids: string[] = [];
+    channels_to_post.forEach(async (element) => {
+        let message = await element.send({ embeds: createLFGEmbed(data) });
+        message_post_ids.push(message.id);
+    });
+
+    message_post_ids.forEach(async (element) => {
+        await LFGPost.create({
+            lfg_id: data.lfg_id,
+            message_id: element
+        });
+    });
 }
 
 export async function updateLFGPost(data: LFGInstance) {
