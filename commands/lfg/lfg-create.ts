@@ -2,6 +2,8 @@ import { plainToInstance } from "class-transformer";
 import { ButtonInteraction, CommandInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu, MessageSelectOptionData, SelectMenuInteraction } from "discord.js";
 import { Group } from "../../data/activities";
 import { data } from "../../data/activities.json";
+import { LFG } from "../../models/lfg";
+import { createLFGPost } from "./lfg-post";
 
 export const LFGCreate = async (interaction: CommandInteraction) => {
     const activities = plainToInstance(Group, data);
@@ -18,6 +20,7 @@ export const LFGCreate = async (interaction: CommandInteraction) => {
         currNav = group!;
     
         componentsToAdd = [];
+        // create back button if inside subgroups
         if (navigation.length) {
             componentsToAdd.unshift( new MessageActionRow()
                 .addComponents(
@@ -30,6 +33,7 @@ export const LFGCreate = async (interaction: CommandInteraction) => {
             )
         }
     
+        // create dropdown menu options
         let options: MessageSelectOptionData[] = [];
         group?.values.forEach(x => {
             let value = x.value;
@@ -46,6 +50,7 @@ export const LFGCreate = async (interaction: CommandInteraction) => {
             options.push(data);
         });
     
+        // add dropdowns to message
         componentsToAdd.unshift( new MessageActionRow()
             .addComponents(
                 new MessageSelectMenu()
@@ -55,6 +60,7 @@ export const LFGCreate = async (interaction: CommandInteraction) => {
             )
         )
     
+        // send an update if not initial message send
         if (componentInteraction) {
             componentInteraction.update({ content: `*${currNav.title}*\n${currNav.description}`, components: componentsToAdd });
         }
@@ -88,6 +94,13 @@ export const LFGCreate = async (interaction: CommandInteraction) => {
             }
             else {
                 // ACTIVITY HAS BEEN SELECTED HERE
+                let lfg_post = await LFG.create({
+                    activity: i.values[0],
+                    time: "not implemented",
+                    description: "not implemented",
+                    author_id: interaction.user.id
+                });
+                await createLFGPost(lfg_post, interaction.guild?.id);
                 await interaction.editReply({ content: `${i.values[0]} has been selected.`, components: [] });
             }
         }

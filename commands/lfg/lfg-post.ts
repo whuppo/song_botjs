@@ -6,10 +6,26 @@ import { ServerSettings } from "../../models/settings"
 
 function createLFGEmbed(data: LFGInstance) {
     const embed = new MessageEmbed()
-        .setTitle("test")
+        .setColor("#0099ff")
+        .setTitle(data.activity)
+        .setDescription(data.description)
+        .addField("Time", data.time)
+        .setFooter({ text: `LFG ID: ${data.lfg_id.toString()}` })
+
+    const user = client.users.cache.get(data.author_id);
+    if (user) {
+        embed.setAuthor({
+           name: "Creator: " + user.username,
+           iconURL: user.displayAvatarURL(),
+        });
+    }
+
+    return [embed]
 }
 
-export async function createLFGPost(data: LFGInstance, server_id: string) {
+export async function createLFGPost(data: LFGInstance, server_id: string | undefined) {
+    if (!server_id) return;
+
     const server_setting = await ServerSettings.findOne({
         where: { server_id: server_id }
     });
@@ -22,7 +38,7 @@ export async function createLFGPost(data: LFGInstance, server_id: string) {
 
     if (!post_channel.isText()) return;
 
-    post_channel.send("lfg_text");
+    const post_message = await post_channel.send({ embeds: createLFGEmbed(data) });
 }
 
 export async function updateLFGPost(data: LFGInstance) {

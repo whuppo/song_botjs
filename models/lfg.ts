@@ -9,28 +9,26 @@ export interface LFGInstance extends Model {
     activity: string,
     time: string,
     description: string,
-    author_id: number
-}
-
-async function LFGUIDGenerator() {
-    const min = 1000;
-    const max = 9999;
-
-    let check, roll = null;
-    while (!check) {
-        roll = Math.floor(Math.random() * (max - min + 1) + min);
-        check = await LFG.findOne({
-            where: {id: roll}
-        })
-    }
-
-    return roll;
+    author_id: string
 }
 
 export const LFG = db.define<LFGInstance>("LFG", {
     lfg_id: {
         type: DataTypes.NUMBER,
-        defaultValue: async () => await LFGUIDGenerator(),
+        defaultValue: async () => {
+            const min = 1000;
+            const max = 9999;
+
+            let check, roll = null;
+            while (!check) {
+                roll = Math.floor(Math.random() * (max - min + 1) + min);
+                check = await LFG.findOne({
+                    where: {lfg_id: roll}
+                })
+            }
+
+            return roll;
+        },
         primaryKey: true
     },
     activity: DataTypes.TEXT,
