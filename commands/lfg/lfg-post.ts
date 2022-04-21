@@ -5,7 +5,7 @@ import { LFGPost } from "../../models/lfg-post"
 import { LFGSubscribe } from "../../models/lfg-subscribe"
 import { ServerSettings } from "../../models/settings"
 
-function createLFGEmbed(data: LFGInstance) {
+async function createLFGEmbed(data: LFGInstance) {
     let message: MessageOptions = {};
     const embed = new MessageEmbed()
         .setColor("#0099ff")
@@ -86,10 +86,9 @@ export async function createLFGPost(data: LFGInstance, server_id: string | undef
     });
 
     channels_to_post.forEach(async (element) => {
-        await element.send(createLFGEmbed(data))
+        await element.send(await createLFGEmbed(data))
             .then(async (message) => {
                 await LFGPost.create({
-                    lfg_id: data.lfg_id,
                     message_id: message.id
                 });
             });
