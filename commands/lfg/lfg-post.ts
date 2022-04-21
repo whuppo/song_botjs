@@ -75,7 +75,7 @@ export async function createLFGPost(data: LFGInstance, server_id: string | undef
                             .then(async (message) => {
                                 await LFGPost.create({
                                     lfg_id: data.lfg_id,
-                                    channel_id: element.id,
+                                    channel_id: message.channelId,
                                     message_id: message.id
                                 });
                             });
