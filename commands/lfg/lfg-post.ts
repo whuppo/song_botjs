@@ -89,6 +89,8 @@ export async function createLFGPost(data: LFGInstance, server_id: string | undef
         await element.send(await createLFGEmbed(data))
             .then(async (message) => {
                 await LFGPost.create({
+                    lfg_id: data.lfg_id,
+                    channel_id: element.id,
                     message_id: message.id
                 });
             });
@@ -101,4 +103,24 @@ export async function updateLFGPost(data: LFGInstance) {
     });
 
 
+}
+
+export async function deleteLFGPost(data: LFGInstance) {
+    await LFGPost.findAll({
+        where: { lfg_id: data.lfg_id }
+    })
+        .then(async (post) => {
+            post.forEach(async (element) => {
+                let channel = client.channels.cache.get(element.channel_id)
+
+                if (channel && channel.isText()) {
+                    await channel.messages.fetch(element.message_id)
+                        .then(async (message) => {
+                            await message.delete();
+                        });
+                }
+            });
+
+            data.destroy();
+        });
 }

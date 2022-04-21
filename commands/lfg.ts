@@ -1,8 +1,10 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { Op } from "sequelize";
+import { LFG } from "../models/lfg";
 import { ServerSettings } from "../models/settings";
 import { Command } from "./ICommand";
 import { LFGCreate } from "./lfg/lfg-create";
+import { deleteLFGPost } from "./lfg/lfg-post";
 
 //activity select general -> specific
 //time -> h:m am/pm tz m/d
@@ -64,7 +66,24 @@ export const lfg: Command = {
                 break;
             }
             case "delete": {
-                // TODO
+                const lfg_id = interaction.options.getInteger("lfg-id")
+                await LFG.findOne({
+                    where: { lfg_id: lfg_id }
+                })
+                .then(async (data) => {
+                    if (data) {
+                        if (data.author_id === interaction.user.id) {
+                            await deleteLFGPost(data);
+                            await interaction.editReply(`LFG Post ${lfg_id} has been deleted.`);
+                        }
+                        else {
+                            await interaction.editReply(`You are not the author of LFG Post ${lfg_id}!`);
+                        }
+                    }
+                    else {
+                        await interaction.editReply(`LFG Post ID is invalid.`);
+                    }
+                })
                 break;
             }
         }

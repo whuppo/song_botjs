@@ -23,4 +23,4 @@ export const Character = db.define<CharacterInstance>("Character", {
 });
 
 Character.belongsToMany(LFG, { through: "Players", foreignKey: "character_name" });
-LFG.belongsToMany(Character, { through: "Players", foreignKey: "lfg_id" });
+LFG.belongsToMany(Character, { through: "Players", foreignKey: "lfg_id", onDelete: "CASCADE" });
