@@ -15,5 +15,5 @@ export const LFGPost = db.define<LFGPostInstance>("LFGPost", {
     message_id: DataTypes.TEXT
 });
 
-LFGPost.belongsTo(LFG, { foreignKey: "lfg_id", onDelete: "CASCADE" });
-LFG.hasMany(LFGPost);
+LFGPost.belongsTo(LFG, { foreignKey: "lfg_id" });
+LFG.hasMany(LFGPost, { onDelete: "CASCADE" });

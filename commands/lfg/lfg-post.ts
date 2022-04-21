@@ -57,44 +57,46 @@ export async function createLFGPost(data: LFGInstance, server_id: string | undef
 
     if (!server_setting) return;
 
-    let channels_to_check: string[] = [];
-    channels_to_check.push(server_setting.lfg_channel);
-
-    const subscribed_servers = await LFGSubscribe.findAll({
+    await LFGSubscribe.findAll({
         where: { subscribed_server_id: server_id }
-    });
+    })
+    .then(async (subscribed) => {
+        if (subscribed.length) {
+            subscribed.forEach(async (element) => {
+                await ServerSettings.findOne({
+                    where: { server_id: element.server_id }
+                })
+                .then(async (subscribed_server_setting) => {
+                    if (subscribed_server_setting) {
+                        let channelToSend = client.channels.cache.find(channel => channel.id == subscribed_server_setting.lfg_channel);
 
-    if (subscribed_servers.length) {
-        subscribed_servers.forEach(async (element) => {
-            let subscribed_server_setting = await ServerSettings.findOne({
-                where: { server_id: element.server_id }
+                        if (channelToSend && channelToSend.isText()) {
+                            await channelToSend.send(await createLFGEmbed(data))
+                            .then(async (message) => {
+                                await LFGPost.create({
+                                    lfg_id: data.lfg_id,
+                                    channel_id: element.id,
+                                    message_id: message.id
+                                });
+                            });
+                        }
+                    }
+                })
             });
-
-            if (!subscribed_server_setting) return;
-
-            channels_to_check.push(subscribed_server_setting.lfg_channel);
-        });
-    }
-
-    let channels_to_post: TextBasedChannel[] = [];
-    channels_to_check.forEach(async (element) => {
-        let check = client.channels.cache.find(channel => channel.id == element);
-
-        if (check && check.isText()) {
-            channels_to_post.push(check);
         }
-    });
 
-    channels_to_post.forEach(async (element) => {
-        await element.send(await createLFGEmbed(data))
+        let channelToSelfSend = client.channels.cache.find(channel => channel.id == server_setting.lfg_channel);
+        if (channelToSelfSend && channelToSelfSend.isText()) {
+            await channelToSelfSend.send(await createLFGEmbed(data))
             .then(async (message) => {
                 await LFGPost.create({
                     lfg_id: data.lfg_id,
-                    channel_id: element.id,
+                    channel_id: server_setting.lfg_channel,
                     message_id: message.id
                 });
             });
-    });
+        }
+    })
 }
 
 export async function updateLFGPost(data: LFGInstance) {

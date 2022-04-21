@@ -18,8 +18,17 @@ export const onReady = async (client: Client) => {
         { body: commandData }
     );
 
+    await rest.put(
+        Routes.applicationGuildCommands(
+            client.user?.id || "missing id",
+            process.env.GUILD_ID2 as string
+        ),
+        { body: commandData }
+    );
+
     // alter can have destructive properties, make sure to double-check table changes
     getDB().sync({alter: true});
+    // getDB().sync();
 
     console.log( "Ready." );
 };
